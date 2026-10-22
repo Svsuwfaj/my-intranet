@@ -15,14 +15,14 @@ const db = new sqlite3.Database('./database.sqlite', (err) => {
 });
 
 db.serialize(() => {
-    // 사용자 테이블
+    // 유저 테이블
     db.run(`CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE,
         password TEXT,
         name TEXT,
-        rank TEXT,
-        category TEXT
+        rank TEXT DEFAULT '아이언',
+        category TEXT DEFAULT '일반직'
     )`);
 
     // 출퇴근 기록 테이블
@@ -47,46 +47,38 @@ db.serialize(() => {
         date TEXT
     )`);
 
-    // 초기 멤버 시드 데이터 삽입
-    const initialMembers = [
-        { username: 'pingpong', name: '핑퐁', rank: '화경앵', category: '최고위직' },
-        { username: 'kangsangsik', name: '강상식', rank: '천본앵', category: '최고위직' },
-        { username: 'hanjuho', name: '한주호', rank: '화개', category: '간부직' },
-        { username: 'luci', name: '르시', rank: '화개', category: '간부직' },
-        { username: 'seodanhee', name: '서단희', rank: '화개', category: '간부직' },
-        { username: 'seonggeun', name: '성근', rank: '성개', category: '일반직' },
-        { username: 'seojihun', name: '서지훈', rank: '반개', category: '일반직' },
-        { username: 'isea', name: '이세아', rank: '만소', category: '일반직' },
-        { username: 'radae', name: '라대', rank: '만소', category: '일반직' },
-        { username: 'hanjeongheun', name: '한정흔', rank: '만소', category: '일반직' },
-        { username: 'gami', name: '감이', rank: '만소', category: '일반직' },
-        { username: 'meonggu', name: '멍구', rank: '만소', category: '일반직' },
-        { username: 'habaek', name: '하백', rank: '만소', category: '일반직' },
-        { username: 'kyoboss', name: '쿄사장', rank: '만소', category: '일반직' },
-        { username: 'doma', name: '도마', rank: '만소', category: '일반직' },
-        { username: 'heokbun', name: '흑분', rank: '만소', category: '일반직' },
-        { username: 'baekgu', name: '백색애완백구', rank: '만소', category: '일반직' },
-        { username: 'gilpanseo', name: '길판서', rank: '낙화(수습)', category: '일반직' },
-        { username: 'yarkeung', name: '야르킁', rank: '낙화(수습)', category: '일반직' },
-        { username: 'ppodori', name: '뽀돌이', rank: '낙화(수습)', category: '일반직' },
-        { username: 'seongnim', name: '성님', rank: '낙화(수습)', category: '일반직' },
-        { username: 'sinddonggu', name: '신똥구', rank: '낙화(수습)', category: '일반직' },
-        { username: 'dongmin', name: '동민', rank: '낙화(수습)', category: '일반직' },
-        { username: 'jeongjinwoo', name: '정진우', rank: '낙화(수습)', category: '일반직' },
-        { username: 'kimgaeng', name: '김갱', rank: '낙화(수습)', category: '일반직' },
-        { username: 'hihit', name: '히힛', rank: '유화', category: '특수직' },
-        { username: 'heukbaek', name: '흑백', rank: '유화', category: '특수직' },
-        { username: 'admin', name: '관리자', rank: '화경앵', category: '최고위직' }
-    ];
-
+    // 기본 관리자 계정만 생성 (이전 사쿠라 인원 완전 삭제)
     const stmt = db.prepare(`INSERT OR IGNORE INTO users (username, password, name, rank, category) VALUES (?, '1234', ?, ?, ?)`);
-    initialMembers.forEach(m => stmt.run([m.username, m.name, m.rank, m.category]));
+    stmt.run(['admin', '관리자', '레디언트', '최고위직']);
     stmt.finalize();
 });
 
-// 메인 페이지 라우트
+// 메인 라우트
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'), (err) => {
+        if (err) res.sendFile(path.join(__dirname, 'index.html'));
+    });
+});
+
+// 회원가입 API
+app.post('/api/register', (req, res) => {
+    const { username, password, name } = req.body;
+    if (!username || !password || !name) {
+        return res.json({ success: false, message: '모든 항목을 입력해주세요.' });
+    }
+
+    db.run(`INSERT INTO users (username, password, name, rank, category) VALUES (?, ?, ?, '아이언', '일반직')`,
+        [username, password, name],
+        function (err) {
+            if (err) {
+                if (err.message.includes('UNIQUE')) {
+                    return res.json({ success: false, message: '이미 존재하는 아이디입니다.' });
+                }
+                return res.json({ success: false, message: '회원가입 처리 중 오류가 발생했습니다.' });
+            }
+            res.json({ success: true, message: '회원가입이 완료되었습니다! 로그인 해주세요.' });
+        }
+    );
 });
 
 // 로그인 API
@@ -105,13 +97,13 @@ app.post('/api/clock-in', (req, res) => {
     const dateStr = now.toISOString().split('T')[0];
 
     db.get(`SELECT * FROM attendance WHERE username = ? AND clock_out IS NULL`, [username], (err, row) => {
-        if (row) return res.json({ success: false, message: '이미 출근 중인 상태입니다.' });
+        if (row) return res.json({ success: false, message: '이미 작전 수행(출근) 중입니다.' });
 
         db.run(`INSERT INTO attendance (username, name, rank, category, clock_in, date) VALUES (?, ?, ?, ?, ?, ?)`,
             [username, name, rank, category, now.toISOString(), dateStr],
             function (err) {
                 if (err) return res.status(500).json({ success: false, message: '출근 등록 실패' });
-                res.json({ success: true, message: `[${rank}] ${name}님, 출근 완료!` });
+                res.json({ success: true, message: `[${rank}] ${name} 요원, 작전에 배치되었습니다!` });
             }
         );
     });
@@ -123,7 +115,7 @@ app.post('/api/clock-out', (req, res) => {
     const now = new Date();
 
     db.get(`SELECT * FROM attendance WHERE username = ? AND clock_out IS NULL`, [username], (err, row) => {
-        if (!row) return res.json({ success: false, message: '출근 기록을 찾을 수 없습니다.' });
+        if (!row) return res.json({ success: false, message: '현재 복귀 대기 중인 출근 기록이 없습니다.' });
 
         const inTime = new Date(row.clock_in);
         const diffSec = Math.floor((now - inTime) / 1000);
@@ -132,51 +124,46 @@ app.post('/api/clock-out', (req, res) => {
             [now.toISOString(), diffSec, row.id],
             function (err) {
                 if (err) return res.status(500).json({ success: false });
-                res.json({ success: true, message: '퇴근 처리되었습니다.' });
+                res.json({ success: true, message: '작전 복귀(퇴근)가 완료되었습니다.' });
             }
         );
     });
 });
 
-// 출근부 및 통계 조회 API
+// 출근부 데이터 및 통계 API
 app.get('/api/attendance-data', (req, res) => {
     db.all(`SELECT * FROM attendance ORDER BY clock_in DESC`, [], (err, rows) => {
         if (err) return res.status(500).json({ success: false });
         
         db.all(`SELECT COUNT(*) as total FROM users`, [], (err, userCountRow) => {
-            const totalMembers = userCountRow[0]?.total || 27;
-            
-            // 오늘 날짜 기준 출근한 고유 인원 수 계산
+            const totalMembers = userCountRow[0]?.total || 1;
             const todayStr = new Date().toISOString().split('T')[0];
             const todayWorkingSet = new Set();
+            
             rows.forEach(r => {
                 if (r.date === todayStr) todayWorkingSet.add(r.username);
             });
 
             const workingCount = todayWorkingSet.size;
-            const attendanceRate = ((workingCount / totalMembers) * 100).toFixed(1);
+            const attendanceRate = totalMembers > 0 ? ((workingCount / totalMembers) * 100).toFixed(1) : 0;
 
             res.json({
                 success: true,
                 list: rows,
-                stats: {
-                    totalMembers,
-                    workingCount,
-                    attendanceRate
-                }
+                stats: { totalMembers, workingCount, attendanceRate }
             });
         });
     });
 });
 
-// 공지사항 조회 API
+// 작전 브리핑(공지) 목록
 app.get('/api/notices', (req, res) => {
     db.all(`SELECT * FROM notices ORDER BY id DESC`, [], (err, rows) => {
         res.json({ success: true, list: rows });
     });
 });
 
-// 공지사항 등록 API
+// 작전 브리핑(공지) 등록
 app.post('/api/notices', (req, res) => {
     const { title, content, author } = req.body;
     const dateStr = new Date().toISOString().split('T')[0];
@@ -189,19 +176,47 @@ app.post('/api/notices', (req, res) => {
     );
 });
 
-// 전체 유저 목록 (직급 관리용)
+// 유저 목록 조회
 app.get('/api/users', (req, res) => {
     db.all(`SELECT username, name, rank, category FROM users`, [], (err, rows) => {
         res.json({ success: true, list: rows });
     });
 });
 
-// 직급 변경 (진급/조정) API (최고위직 전용)
+// 관리자 직접 인원 추가 API
+app.post('/api/admin-add-user', (req, res) => {
+    const { username, password, name, rank, category } = req.body;
+    if (!username || !password || !name) {
+        return res.json({ success: false, message: '필수 정보를 모두 입력하세요.' });
+    }
+
+    db.run(`INSERT INTO users (username, password, name, rank, category) VALUES (?, ?, ?, ?, ?)`,
+        [username, password, name, rank || '아이언', category || '일반직'],
+        function (err) {
+            if (err) return res.json({ success: false, message: '유저 등록 실패 (중복된 아이디일 수 있습니다).' });
+            res.json({ success: true, message: `[${rank}] ${name} 요원이 등록되었습니다.` });
+        }
+    );
+});
+
+// 관리자 요원 삭제 API
+app.post('/api/admin-delete-user', (req, res) => {
+    const { username } = req.body;
+    if (username === 'admin') {
+        return res.json({ success: false, message: '기본 메인 관리자 계정은 삭제할 수 없습니다.' });
+    }
+    db.run(`DELETE FROM users WHERE username = ?`, [username], function (err) {
+        if (err) return res.json({ success: false, message: '삭제 실패' });
+        res.json({ success: true, message: '해당 요원이 명단에서 삭제되었습니다.' });
+    });
+});
+
+// 티어 조정 API
 app.post('/api/update-rank', (req, res) => {
     const { username, newRank, newCategory } = req.body;
     db.run(`UPDATE users SET rank = ?, category = ? WHERE username = ?`, [newRank, newCategory, username], function (err) {
-        if (err) return res.json({ success: false, message: '직급 변경 실패' });
-        res.json({ success: true, message: '직급이 성공적으로 변경되었습니다.' });
+        if (err) return res.json({ success: false, message: '티어 변경 실패' });
+        res.json({ success: true, message: '티어가 성공적으로 변동되었습니다.' });
     });
 });
 
@@ -219,5 +234,5 @@ app.post('/api/change-password', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Valorant Intranet server running on port ${PORT}`);
 });
