@@ -1,217 +1,258 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>조직 통합 인트라넷</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
-    body { background-color: #0f172a; color: #f8fafc; }
-    #login-screen { display: flex; justify-content: center; align-items: center; height: 100vh; background: #090d16; }
-    .login-card { background: #1e293b; padding: 40px; border-radius: 12px; width: 380px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-    .login-card h2 { text-align: center; margin-bottom: 24px; color: #38bdf8; }
-    .input-group { margin-bottom: 16px; }
-    .input-group label { display: block; margin-bottom: 6px; font-size: 14px; color: #94a3b8; }
-    .input-group input, .input-group select { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff; }
-    .btn-main { width: 100%; padding: 12px; border: none; border-radius: 6px; background: #0284c7; color: #fff; font-weight: bold; cursor: pointer; }
-    .btn-main:hover { background: #0369a1; }
-    #dashboard-screen { display: none; padding: 24px; max-width: 1200px; margin: 0 auto; }
-    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid #334155; margin-bottom: 24px; }
-    .duty-box { display: flex; align-items: center; gap: 12px; }
-    .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; }
-    .off-duty { background: #ef4444; color: #fff; }
-    .on-duty { background: #22c55e; color: #fff; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-    .card { background: #1e293b; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-    .card h3 { margin-bottom: 16px; font-size: 18px; color: #38bdf8; border-bottom: 1px solid #334155; padding-bottom: 8px; }
-    ul { list-style: none; }
-    li { padding: 10px 0; border-bottom: 1px solid #334155; font-size: 14px; display: flex; justify-content: space-between; }
-    .admin-panel { background: #172033; border: 1px dashed #38bdf8; margin-bottom: 24px; padding: 20px; border-radius: 10px; display: none; }
-    .admin-panel h3 { color: #38bdf8; margin-bottom: 12px; }
-    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 10px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌸 사 쿠 라 조직 인트라넷</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
+        body { 
+            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); 
+            color: #334155; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px;
+        }
+        .card { 
+            background: #ffffff; 
+            border-radius: 18px; 
+            padding: 35px; 
+            border: 1px solid #fbcfe8; 
+            box-shadow: 0 15px 35px rgba(244, 114, 182, 0.15); 
+            width: 100%; 
+            max-width: 1000px; 
+        }
+        
+        /* 로그인 창 */
+        .login-box { max-width: 400px; margin: 0 auto; text-align: center; }
+        .login-box h2 { color: #db2777; font-size: 26px; margin-bottom: 25px; font-weight: 800; letter-spacing: 1px; }
+        .input-group { margin-bottom: 18px; text-align: left; }
+        .input-group label { display: block; font-size: 13px; color: #701a75; margin-bottom: 6px; font-weight: 600; }
+        .input-group input { 
+            width: 100%; 
+            padding: 13px; 
+            background: #fdf4f8; 
+            border: 1.5px solid #f472b6; 
+            border-radius: 8px; 
+            color: #1f2937; 
+            font-size: 14px; 
+            transition: 0.2s;
+        }
+        .input-group input:focus { outline: none; border-color: #db2777; background: #fff; box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.1); }
+        
+        .btn { 
+            width: 100%; 
+            padding: 13px; 
+            background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 15px;
+            cursor: pointer; 
+            transition: 0.2s; 
+            margin-top: 10px; 
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+        }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* 대시보드 Header */
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #fce7f3; padding-bottom: 18px; margin-bottom: 25px; }
+        .header h1 { font-size: 22px; color: #be185d; font-weight: 800; }
+        .status-badge { background: #fdf2f8; color: #be185d; border: 1px solid #f472b6; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+
+        /* 출근/퇴근 컨트롤 */
+        .action-bar { display: flex; gap: 15px; margin-bottom: 30px; background: #fff1f2; padding: 18px; border-radius: 12px; border: 1px solid #fecdd3; align-items: center; justify-content: space-between; }
+        .btn-clock-in { background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); }
+        .btn-clock-in:hover { opacity: 0.9; }
+        .btn-clock-out { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); }
+        .btn-clock-out:hover { opacity: 0.9; }
+
+        /* 직급 태그 스타일 */
+        .rank-badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+        .rank-top { background: #fce7f3; color: #9d174d; border: 1px solid #f472b6; } /* 최고위직 */
+        .rank-high { background: #fff1f2; color: #be185d; border: 1px solid #fda4af; } /* 고위직 */
+        .rank-mid { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; } /* 간부직 */
+        .rank-normal { background: #f1f5f9; color: #475569; } /* 일반직 */
+        .rank-special { background: #faf5ff; color: #7e22ce; border: 1px solid #d8b4fe; } /* 특수직 */
+
+        /* 테이블 (출근부) */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; font-size: 14px; }
+        th, td { padding: 14px; border-bottom: 1px solid #f1f5f9; }
+        th { background: #fdf4f8; color: #9d174d; font-weight: 700; }
+        .working-tag { color: #059669; font-weight: bold; background: #d1fae5; padding: 5px 10px; border-radius: 6px; font-size: 12px; }
+        .done-tag { color: #64748b; background: #f1f5f9; padding: 5px 10px; border-radius: 6px; font-size: 12px; }
+        .timer { color: #db2777; font-family: monospace; font-weight: 700; font-size: 15px; }
+    </style>
 </head>
 <body>
-  <!-- 로그인 화면 -->
-  <div id="login-screen">
-    <div class="login-card">
-      <h2>ORGANIZATION LOGIN</h2>
-      <div class="input-group">
-        <label>아이디</label>
-        <input type="text" id="username" placeholder="아이디 입력">
-      </div>
-      <div class="input-group">
-        <label>비밀번호</label>
-        <input type="password" id="password" placeholder="비밀번호 입력">
-      </div>
-      <button class="btn-main" onclick="handleLogin()">로그인</button>
-    </div>
-  </div>
 
-  <!-- 대시보드 화면 -->
-  <div id="dashboard-screen">
-    <header>
-      <div>
-        <h1 id="user-info">조직원 정보</h1>
-        <p style="color: #94a3b8; font-size: 14px;">조직 통합 관리 인트라넷 시스템</p>
-      </div>
-      <div class="duty-box">
-        <span id="duty-status" class="status-badge off-duty">퇴근 상태</span>
-        <button id="duty-btn" class="btn-main" style="width: auto; padding: 8px 16px;" onclick="toggleDuty()">출근하기</button>
-      </div>
-    </header>
-
-    <!-- 관리자 전용: 조직원 계정 생성 패널 -->
-    <div id="admin-section" class="admin-panel">
-      <h3>🛠️ [관리자 전용] 조직원 계정 생성</h3>
-      <div class="form-row">
-        <input type="text" id="new-username" placeholder="아이디">
-        <input type="password" id="new-password" placeholder="비밀번호">
-        <input type="text" id="new-charname" placeholder="캐릭터 이름">
-      </div>
-      <div class="form-row">
-        <input type="text" id="new-dept" placeholder="소속 (예: 경찰청)">
-        <input type="text" id="new-grade" placeholder="계급/직급 (예: 경장)">
-        <select id="new-role">
-          <option value="member">일반 조직원</option>
-          <option value="admin">관리자</option>
-        </select>
-      </div>
-      <button class="btn-main" style="background: #10b981;" onclick="createMember()">계정 발급하기</button>
-    </div>
-
-    <!-- 대시보드 카드 그리드 -->
-    <div class="grid">
-      <div class="card">
-        <h3>🚨 현재 근무 중인 조직원 (<span id="duty-count">0</span>명)</h3>
-        <ul id="duty-list"><li>근무 중인 인원이 없습니다.</li></ul>
-      </div>
-      <div class="card">
-        <h3>📊 조직 전체 출근율 / 접속률</h3>
-        <div style="text-align: center; padding: 20px 0;">
-          <h1 id="duty-rate-display" style="font-size: 48px; color: #38bdf8;">0%</h1>
-          <p style="color: #94a3b8; margin-top: 8px; font-size: 14px;">전체 인원 대비 현재 출근 비율</p>
+<div class="card">
+    <!-- 로그인 폼 -->
+    <div id="loginSection" class="login-box">
+        <h2>🌸 『 사 쿠 라 』 로그인</h2>
+        <div class="input-group">
+            <label>아이디</label>
+            <input type="text" id="username" placeholder="예: pingpong 또는 admin">
         </div>
-      </div>
-      <div class="card">
-        <h3>📢 마공포 및 필독 공지사항</h3>
-        <ul id="notice-list"><li>공지사항을 불러오는 중...</li></ul>
-      </div>
+        <div class="input-group">
+            <label>비밀번호</label>
+            <input type="password" id="password" placeholder="초기 비밀번호: 1234">
+        </div>
+        <button class="btn" onclick="login()">로그인</button>
     </div>
-  </div>
 
-  <script>
+    <!-- 대시보드 (출근부) -->
+    <div id="dashboardSection" style="display: none;">
+        <div class="header">
+            <h1>🌸 『 사 쿠 라 』 조직 근태 관리 대시보드</h1>
+            <span class="status-badge" id="userGreeting"></span>
+        </div>
+
+        <div class="action-bar">
+            <div>
+                <span style="font-size: 14px; color: #64748b;">현재 접속자: </span>
+                <strong id="currentUserName" style="color: #be185d;"></strong>
+            </div>
+            <div style="display: flex; gap: 10px; width: 260px;">
+                <button class="btn btn-clock-in" onclick="clockIn()">✨ 출근하기</button>
+                <button class="btn btn-clock-out" onclick="clockOut()">💤 퇴근하기</button>
+            </div>
+        </div>
+
+        <h3 style="font-size: 16px; margin-bottom: 12px; color: #831843; font-weight: 700;">📋 조직원 출근부 및 실시간 근무시간</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>분류 / 직급</th>
+                    <th>이름 (ID)</th>
+                    <th>날짜</th>
+                    <th>출근 시간</th>
+                    <th>퇴근 시간</th>
+                    <th>오늘 근무 시간 (실시간)</th>
+                    <th>상태</th>
+                </tr>
+            </thead>
+            <tbody id="attendanceTable">
+                <!-- JavaScript로 자동 채워짐 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
     let currentUser = null;
+    let timerInterval = null;
 
-    async function handleLogin() {
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+    async function login() {
+        const u = document.getElementById('username').value;
+        const p = document.getElementById('password').value;
 
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: u, password: p })
+        });
+        const data = await res.json();
 
-      const data = await res.json();
-      if (data.success) {
-        currentUser = data.user;
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('dashboard-screen').style.display = 'block';
-        document.getElementById('user-info').innerText = `${currentUser.name} (${currentUser.dept} / ${currentUser.grade})`;
-        
-        // 관리자일 경우 계정 생성 창 표시
-        if (currentUser.role === 'admin') {
-          document.getElementById('admin-section').style.display = 'block';
+        if (data.success) {
+            currentUser = data.user;
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+            document.getElementById('userGreeting').innerText = `[${currentUser.rank}] ${currentUser.name}님 환영합니다 🌸`;
+            document.getElementById('currentUserName').innerText = `[${currentUser.category}] ${currentUser.rank} - ${currentUser.name}`;
+            
+            loadAttendance();
+            if(timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(loadAttendance, 1000);
+        } else {
+            alert(data.message);
         }
+    }
 
-        updateDutyUI(currentUser.isDuty);
-        loadDashboardData();
-      } else {
+    async function clockIn() {
+        if (!currentUser) return;
+        const res = await fetch('/api/clock-in', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                username: currentUser.username, 
+                name: currentUser.name,
+                rank: currentUser.rank,
+                category: currentUser.category 
+            })
+        });
+        const data = await res.json();
         alert(data.message);
-      }
+        loadAttendance();
     }
 
-    async function toggleDuty() {
-      const nextStatus = currentUser.isDuty === 1 ? 0 : 1;
-      const res = await fetch('/api/duty/toggle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: currentUser.id, isDuty: nextStatus })
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        currentUser.isDuty = nextStatus;
-        updateDutyUI(nextStatus);
-        loadDashboardData();
-      }
-    }
-
-    function updateDutyUI(isDuty) {
-      const badge = document.getElementById('duty-status');
-      const btn = document.getElementById('duty-btn');
-      if (isDuty === 1) {
-        badge.innerText = '근무 중 (출근)';
-        badge.className = 'status-badge on-duty';
-        btn.innerText = '퇴근하기';
-        btn.style.background = '#dc2626';
-      } else {
-        badge.innerText = '퇴근 상태';
-        badge.className = 'status-badge off-duty';
-        btn.innerText = '출근하기';
-        btn.style.background = '#0284c7';
-      }
-    }
-
-    async function createMember() {
-      const username = document.getElementById('new-username').value;
-      const password = document.getElementById('new-password').value;
-      const char_name = document.getElementById('new-charname').value;
-      const department = document.getElementById('new-dept').value;
-      const grade = document.getElementById('new-grade').value;
-      const role = document.getElementById('new-role').value;
-
-      if (!username || !password || !char_name) {
-        alert('필수 입력 정보를 채워주세요!');
-        return;
-      }
-
-      const res = await fetch('/api/members/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, char_name, department, grade, role })
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        alert('계정이 성공적으로 발급되었습니다!');
-        document.getElementById('new-username').value = '';
-        document.getElementById('new-password').value = '';
-        document.getElementById('new-charname').value = '';
-      } else {
+    async function clockOut() {
+        if (!currentUser) return;
+        const res = await fetch('/api/clock-out', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: currentUser.username })
+        });
+        const data = await res.json();
         alert(data.message);
-      }
+        loadAttendance();
     }
 
-    async function loadDashboardData() {
-      const res = await fetch('/api/dashboard');
-      const data = await res.json();
-
-      if (data.success) {
-        document.getElementById('duty-count').innerText = data.onDutyCount;
-        document.getElementById('duty-rate-display').innerText = data.dutyRate + '%';
-
-        const dutyList = document.getElementById('duty-list');
-        dutyList.innerHTML = data.onDutyList.length > 0 
-          ? data.onDutyList.map(u => `<li><span>${u.char_name}</span><small style="color:#94a3b8">${u.department} / ${u.grade}</small></li>`).join('')
-          : '<li>현재 근무 중인 조직원이 없습니다.</li>';
-
-        const noticeList = document.getElementById('notice-list');
-        noticeList.innerHTML = data.notices.length > 0
-          ? data.notices.map(n => `<li><span>[${n.category}] ${n.title}</span><small style="color:#94a3b8">${n.author}</small></li>`).join('')
-          : '<li>등록된 공지가 없습니다.</li>';
-      }
+    function getRankBadgeClass(category) {
+        switch(category) {
+            case '최고위직': return 'rank-top';
+            case '고위직': return 'rank-high';
+            case '간부직': return 'rank-mid';
+            case '특수직': return 'rank-special';
+            default: return 'rank-normal';
+        }
     }
-  </script>
+
+    async function loadAttendance() {
+        const res = await fetch('/api/attendance-list');
+        const data = await res.json();
+        
+        if (!data.success) return;
+
+        const tbody = document.getElementById('attendanceTable');
+        tbody.innerHTML = '';
+
+        const now = new Date();
+
+        data.list.forEach(row => {
+            const tr = document.createElement('tr');
+            
+            const inTime = new Date(row.clock_in);
+            const outTime = row.clock_out ? new Date(row.clock_out) : null;
+            
+            const endTime = outTime || now;
+            const diffMs = endTime - inTime;
+            const diffSec = Math.floor(diffMs / 1000);
+            
+            const hrs = Math.floor(diffSec / 3600);
+            const mins = Math.floor((diffSec % 3600) / 60);
+            const secs = diffSec % 60;
+            const timeString = `${hrs}시간 ${mins}분 ${secs}초`;
+
+            const formatTime = (d) => d ? d.toLocaleTimeString('ko-KR', { hour12: false }) : '-';
+            const badgeClass = getRankBadgeClass(row.category);
+
+            tr.innerHTML = `
+                <td><span class="rank-badge ${badgeClass}">${row.category} | ${row.rank}</span></td>
+                <td><strong>${row.name}</strong> <span style="color:#64748b; font-size:12px;">(${row.username})</span></td>
+                <td>${row.date}</td>
+                <td>${formatTime(inTime)}</td>
+                <td>${formatTime(outTime)}</td>
+                <td class="timer">${timeString}</td>
+                <td>${outTime ? '<span class="done-tag">퇴근완료</span>' : '<span class="working-tag">🔥 근무 중</span>'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+</script>
+
 </body>
 </html>
