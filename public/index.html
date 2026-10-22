@@ -13,18 +13,21 @@
             background-color: #0f1923; 
             color: #ece8e1; 
             min-height: 100vh; 
-            display: flex; 
             overflow-x: hidden;
         }
 
         /* ------------------ Auth Screen (Login & Register) ------------------ */
         #authScreen { 
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100vw; 
             height: 100vh; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
             background: radial-gradient(circle at center, #1b2733 0%, #0f1923 100%); 
+            z-index: 9999;
         }
         .auth-card { 
             background: #171e2b; 
@@ -70,35 +73,40 @@
         .input-group input:focus { outline: none; border-color: #ff4655; }
 
         /* ------------------ Main App Layout ------------------ */
-        #mainScreen { display: none; width: 100vw; height: 100vh; overflow: hidden; display: flex; }
+        #mainScreen { 
+            display: none; 
+            width: 100vw; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
         
         aside { 
-            width: 280px; 
+            width: 290px; 
             background: #171e2b; 
             border-right: 1px solid #232a35; 
             display: flex; 
             flex-direction: column; 
-            padding: 30px 20px; 
+            padding: 25px 20px; 
         }
-        .logo-box { text-align: left; padding-bottom: 20px; border-bottom: 1px solid #28303d; margin-bottom: 25px; }
-        .logo-box h3 { font-family: 'Teko', sans-serif; font-size: 32px; color: #ff4655; letter-spacing: 2px; line-height: 1; }
+        .logo-box { text-align: left; padding-bottom: 15px; border-bottom: 1px solid #28303d; margin-bottom: 20px; }
+        .logo-box h3 { font-family: 'Teko', sans-serif; font-size: 30px; color: #ff4655; letter-spacing: 2px; line-height: 1; }
         .logo-box span { font-size: 10px; color: #76808c; letter-spacing: 2px; font-weight: bold; }
 
         .menu-list { list-style: none; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
         .menu-btn { 
             width: 100%; 
-            padding: 15px; 
+            padding: 14px; 
             background: transparent; 
             border: none; 
             text-align: left; 
-            font-size: 14px; 
+            font-size: 13px; 
             font-weight: 700; 
             color: #8b97a8; 
             cursor: pointer; 
             transition: 0.2s; 
             display: flex; 
             align-items: center; 
-            gap: 12px; 
+            gap: 10px; 
             text-transform: uppercase; 
         }
         .menu-btn:hover, .menu-btn.active { 
@@ -107,7 +115,31 @@
             clip-path: polygon(0 0, 100% 0, 93% 100%, 0% 100%); 
         }
 
-        .user-mini-profile { background: #0f1923; padding: 15px; border-left: 3px solid #ff4655; font-size: 13px; color: #ece8e1; margin-top: auto; }
+        /* Discord & Server Info Widgets */
+        .sidebar-widget {
+            background: #0f1923;
+            border: 1px solid #232a35;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 11px;
+        }
+        .discord-btn {
+            display: block;
+            width: 100%;
+            background: #5865F2;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 12px;
+            text-decoration: none;
+            transition: 0.2s;
+            clip-path: polygon(0 0, 100% 0, 95% 100%, 0% 100%);
+            margin-top: 5px;
+        }
+        .discord-btn:hover { background: #4752C4; }
+
+        .user-mini-profile { background: #0f1923; padding: 14px; border-left: 3px solid #ff4655; font-size: 12px; color: #ece8e1; }
 
         /* Main Content Area */
         main { flex-grow: 1; padding: 35px 40px; overflow-y: auto; background: #0f1923; }
@@ -116,7 +148,7 @@
         
         h1.page-title { 
             font-family: 'Teko', sans-serif; 
-            font-size: 40px; 
+            font-size: 38px; 
             color: #ece8e1; 
             letter-spacing: 1.5px; 
             margin-bottom: 25px; 
@@ -175,7 +207,6 @@
         .notice-card p { color: #8b97a8; font-size: 14px; line-height: 1.6; }
         .notice-meta { font-size: 12px; color: #76808c; margin-top: 12px; }
 
-        /* Admin Action Box */
         .admin-box { background: #171e2b; border: 1px solid #ff4655; padding: 20px; margin-bottom: 25px; }
         .admin-box h3 { color: #ff4655; font-size: 16px; margin-bottom: 15px; font-weight: bold; }
     </style>
@@ -230,19 +261,27 @@
     <aside>
         <div class="logo-box">
             <h3>VALORANT // HQ</h3>
-            <span>TACTICAL OPERATIONAL SYSTEM</span>
+            <span>전술 작전 통제 시스템</span>
         </div>
         
         <ul class="menu-list">
-            <li><button class="menu-btn active" onclick="switchTab('dashboard')">🎯 [01] OVERVIEW</button></li>
-            <li><button class="menu-btn" onclick="switchTab('notice')">📢 [02] BRIEFING</button></li>
-            <li><button class="menu-btn" onclick="switchTab('attendance')">⏱️ [03] SQUAD LOGS</button></li>
-            <li><button class="menu-btn" onclick="switchTab('ranks')">⚔️ [04] TIER ROSTER</button></li>
-            <li><button class="menu-btn" onclick="switchTab('settings')">⚙️ [05] SECURITY</button></li>
+            <li><button class="menu-btn active" onclick="switchTab('dashboard')">🎯 [01] 종합 대시보드</button></li>
+            <li><button class="menu-btn" onclick="switchTab('notice')">📢 [02] 작전 브리핑</button></li>
+            <li><button class="menu-btn" onclick="switchTab('attendance')">⏱️ [03] 출근 기록 & 순위</button></li>
+            <li><button class="menu-btn" onclick="switchTab('ranks')">⚔️ [04] 티어 명단 & 인원 관리</button></li>
+            <li><button class="menu-btn" onclick="switchTab('settings')">⚙️ [05] 보안 설정</button></li>
         </ul>
 
+        <!-- 디스코드 및 서버 정보 위젯 -->
+        <div class="sidebar-widget">
+            <div style="color: #76808c; font-size: 10px; font-weight: bold; margin-bottom: 4px;">📡 SYSTEM STATUS</div>
+            <div style="color: #17bf63; font-weight: bold;">SECURE // 연결 안정</div>
+            <div style="color: #8b97a8; font-size: 10px; margin-top: 4px;" id="realtimeClock">00:00:00 KST</div>
+            <a href="https://discord.gg/jCE6jxssF" target="_blank" class="discord-btn">🚀 작전 음성 디스코드 참가</a>
+        </div>
+
         <div class="user-mini-profile" id="miniProfile"></div>
-        <button class="btn btn-red" style="width: 100%; margin-top: 15px; padding: 10px; font-size: 12px;" onclick="logout()">[SECTOR DISCONNECT]</button>
+        <button class="btn btn-red" style="width: 100%; margin-top: 10px; padding: 10px; font-size: 11px;" onclick="logout()">[SECTOR DISCONNECT]</button>
     </aside>
 
     <!-- 메인 콘텐츠 -->
@@ -266,7 +305,10 @@
             </div>
 
             <div style="background: #171e2b; padding: 25px; border: 1px solid #232a35; border-left: 4px solid #ff4655;">
-                <h3 style="color: #ece8e1; margin-bottom: 15px; font-size: 18px;">QUICK CLOCK SYSTEM // 출퇴근 컨트롤</h3>
+                <h3 style="color: #ece8e1; margin-bottom: 12px; font-size: 18px;">QUICK CLOCK SYSTEM // 출퇴근 & 상태 설정</h3>
+                <div style="margin-bottom: 15px;">
+                    <input type="text" id="statusNoteInput" placeholder="오늘의 상태 메시지 (예: 경쟁전 돌리는 중 / 듀오 구함)" style="width: 100%; padding: 12px; background: #0f1923; border: 1px solid #363e47; color: #fff; font-size: 13px;">
+                </div>
                 <div style="display: flex; gap: 15px;">
                     <button class="btn btn-green" style="flex: 1; padding: 16px;" onclick="clockIn()">🚀 [매치 준비 완료] 출근하기</button>
                     <button class="btn btn-red" style="flex: 1; padding: 16px;" onclick="clockOut()">🛑 [작전 종료] 퇴근하기</button>
@@ -295,7 +337,7 @@
                     <tr>
                         <th>요원 티어</th>
                         <th>이름 (ID)</th>
-                        <th>날짜</th>
+                        <th>상태 메시지</th>
                         <th>출근 시간</th>
                         <th>퇴근 시간</th>
                         <th>실시간 작전 시간</th>
@@ -375,6 +417,12 @@
 <script>
     let currentUser = null;
     let timerInterval = null;
+
+    // 초단위 실시간 시계 업데이트
+    setInterval(() => {
+        const clock = document.getElementById('realtimeClock');
+        if(clock) clock.innerText = new Date().toLocaleTimeString('ko-KR', { hour12: false }) + ' KST';
+    }, 1000);
 
     function toggleAuthMode(mode) {
         if(mode === 'login') {
@@ -468,10 +516,11 @@
     }
 
     async function clockIn() {
+        const statusNote = document.getElementById('statusNoteInput').value || '작전 임무 수행 중';
         const res = await fetch('/api/clock-in', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(currentUser)
+            body: JSON.stringify({ ...currentUser, status_note: statusNote })
         });
         const data = await res.json();
         alert(data.message);
@@ -518,7 +567,7 @@
             tr.innerHTML = `
                 <td><span class="tier-badge">${row.rank}</span></td>
                 <td><strong>${row.name}</strong> <span style="color:#76808c; font-size:12px;">(${row.username})</span></td>
-                <td>${row.date}</td>
+                <td><span style="color:#ff4655; font-size:12px;">${row.status_note || '-'}</span></td>
                 <td>${inTime.toLocaleTimeString('ko-KR', {hour12:false})}</td>
                 <td>${outTime ? outTime.toLocaleTimeString('ko-KR', {hour12:false}) : '-'}</td>
                 <td class="timer">${hrs}시간 ${mins}분 ${secs}초</td>

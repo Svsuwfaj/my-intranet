@@ -25,7 +25,7 @@ db.serialize(() => {
         category TEXT DEFAULT '일반직'
     )`);
 
-    // 출퇴근 기록 테이블
+    // 출퇴근 기록 테이블 (status_note 추가)
     db.run(`CREATE TABLE IF NOT EXISTS attendance (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT,
@@ -35,7 +35,8 @@ db.serialize(() => {
         clock_in DATETIME,
         clock_out DATETIME,
         date TEXT,
-        total_seconds INTEGER DEFAULT 0
+        total_seconds INTEGER DEFAULT 0,
+        status_note TEXT DEFAULT ''
     )`);
 
     // 공지사항 테이블
@@ -47,7 +48,7 @@ db.serialize(() => {
         date TEXT
     )`);
 
-    // 기본 관리자 계정만 생성 (이전 사쿠라 인원 완전 삭제)
+    // 기본 관리자 계정만 생성
     const stmt = db.prepare(`INSERT OR IGNORE INTO users (username, password, name, rank, category) VALUES (?, '1234', ?, ?, ?)`);
     stmt.run(['admin', '관리자', '레디언트', '최고위직']);
     stmt.finalize();
@@ -90,17 +91,17 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-// 출근 API
+// 출근 API (상태 메시지 기능 추가)
 app.post('/api/clock-in', (req, res) => {
-    const { username, name, rank, category } = req.body;
+    const { username, name, rank, category, status_note } = req.body;
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
 
     db.get(`SELECT * FROM attendance WHERE username = ? AND clock_out IS NULL`, [username], (err, row) => {
         if (row) return res.json({ success: false, message: '이미 작전 수행(출근) 중입니다.' });
 
-        db.run(`INSERT INTO attendance (username, name, rank, category, clock_in, date) VALUES (?, ?, ?, ?, ?, ?)`,
-            [username, name, rank, category, now.toISOString(), dateStr],
+        db.run(`INSERT INTO attendance (username, name, rank, category, clock_in, date, status_note) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [username, name, rank, category, now.toISOString(), dateStr, status_note || ''],
             function (err) {
                 if (err) return res.status(500).json({ success: false, message: '출근 등록 실패' });
                 res.json({ success: true, message: `[${rank}] ${name} 요원, 작전에 배치되었습니다!` });
