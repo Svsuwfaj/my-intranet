@@ -1,12 +1,3 @@
-// 메인 페이지 접속 시 index.html 보답하기
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'), (err) => {
-        if (err) {
-            // 만약 public 폴더 안에 없을 경우 루트 폴더의 index.html 찾기
-            res.sendFile(path.join(__dirname, 'index.html'));
-        }
-    });
-});
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
@@ -16,6 +7,15 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// 메인 페이지 접속 시 public/index.html 전달 (Cannot GET / 방지)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'), (err) => {
+        if (err) {
+            res.sendFile(path.join(__dirname, 'index.html'));
+        }
+    });
+});
 
 // SQLite DB 연결 및 테이블 생성
 const db = new sqlite3.Database('./database.sqlite', (err) => {
